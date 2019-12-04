@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
-import { Spinner } from '@contentful/forma-36-react-components';
 import Select from 'react-select';
 import { init } from 'contentful-ui-extensions-sdk';
 import 'whatwg-fetch';
@@ -96,7 +95,7 @@ export class App extends React.Component {
 
   render() {
     if (!this.state.hasLoaded) {
-      return <Spinner />;
+      return 'Loading...';
     } else if (this.state.error) {
       return <p>{this.state.error}</p>;
     }
