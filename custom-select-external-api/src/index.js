@@ -4,7 +4,6 @@ import ReactDOM from 'react-dom';
 import { Spinner } from '@contentful/forma-36-react-components';
 import Select from 'react-select';
 import { init } from 'contentful-ui-extensions-sdk';
-import '@contentful/forma-36-react-components/dist/styles.css';
 import 'whatwg-fetch';
 import './index.css';
 
