@@ -1,0 +1,32 @@
+{
+  "id": "custom-select-external-api",
+  "name": "custom-select-external-api",
+  "srcdoc": "./build/index.html",
+  "fieldTypes": ["Object"],
+  "parameters": {
+    "instance": [{
+        "id": "apiUrl",
+        "type": "Symbol",
+        "name": "API URL",
+        "required": true
+      },
+      {
+        "id": "selectConfig",
+        "type": "Enum",
+        "name": "Configure Select Type",
+        "options": [{
+          "single": "Single-select"
+        }, {
+          "multi": "Multi-select (Tagging)"
+        }],
+        "default": "single"
+      },
+      {
+        "id": "placeholderText",
+        "type": "Symbol",
+        "name": "Placeholder text",
+        "description": "Placeholder text for multi-select dropdown"
+      }
+    ]
+  }
+}
