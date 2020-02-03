@@ -1,0 +1,21 @@
+{
+  "id": "custom-movie-picker",
+  "name": "custom-movie-picker",
+  "srcdoc": "./build/index.html",
+  "fieldTypes": ["Object"],
+  "parameters": {
+    "instance": [{
+        "id": "apiUrl",
+        "type": "Symbol",
+        "name": "API URL",
+        "required": true
+      },
+      {
+        "id": "apiKey",
+        "type": "Symbol",
+        "name": "API KEY",
+        "required": true
+      }
+    ]
+  }
+}
