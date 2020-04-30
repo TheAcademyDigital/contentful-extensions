@@ -157,11 +157,20 @@ export class App extends React.Component {
   };
 
   saveMovie = async movie => {
+    // console.log(this.props.sdk.entry.fields);
+    // console.log(movie);
+    let directors = movie.program.directors.length > 0 ? movie.program.directors.join(', ') : '';
+    let topCast = movie.program.topCast.length > 0 ? movie.program.topCast.join(', ') : '';
+
     this.props.sdk.entry.fields.title.setValue(movie.program.title);
     this.props.sdk.entry.fields.adminTitle.setValue(movie.program.title);
-    this.props.sdk.entry.fields.description.setValue(movie.program.shortDescription);
+    this.props.sdk.entry.fields.description.setValue(movie.program.longDescription);
     this.props.sdk.entry.fields.releaseDate.setValue(movie.program.releaseDate);
     this.props.sdk.entry.fields.movieId.setValue(movie.program.tmsId);
+    this.props.sdk.entry.fields.logLine.setValue(movie.program.shortDescription);
+    this.props.sdk.entry.fields.directors.setValue(directors);
+    this.props.sdk.entry.fields.topCast.setValue(topCast);
+
     // this.props.sdk.entry.fields.image.setValue('');
     const rawAsset = await this.createAssetWithImageUrl(
       movie.program.preferredImage.uri,

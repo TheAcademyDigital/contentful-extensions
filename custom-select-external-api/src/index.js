@@ -59,6 +59,7 @@ export class App extends React.Component {
             let parsedBranches = branches.map(branch => {
               return { value: branch.key, label: branch.text };
             });
+            parsedBranches.unshift({ value: '', label: 'Default' });
             this.setState({
               hasLoaded: true,
               branches: parsedBranches
@@ -67,7 +68,7 @@ export class App extends React.Component {
           error => {
             this.setState({
               hasLoaded: true,
-              error: 'Error: Could not fetch options from API'
+              error: `Error: ${error}`
             });
           }
         );
