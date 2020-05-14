@@ -251,11 +251,12 @@ export class App extends React.Component {
     let { apiKey, apiUrl } = this.props.sdk.parameters.invocation;
     if (apiKey && apiUrl) {
       fetch(
-        `${apiUrl}programs/search/?q=${param}&api_key=${apiKey}&imageSize=Ms&limit=25&entityType=movie`
+        `${apiUrl}programs/search/?q=${param}&api_key=${apiKey}&imageSize=Ms&limit=25&entityType=movie&titleLang=en&descriptionLang=en`
       )
         .then(res => res.json())
         .then(
           data => {
+            console.log(data);
             this.setState({
               isLoading: false,
               movies: data.hits
@@ -277,6 +278,7 @@ export class App extends React.Component {
   };
 
   render() {
+    // console.log(this.state.movies);
     // Create master array of search results
     if (this.state.movies.length > 0) {
       var movies = this.state.movies.map(movie => {
