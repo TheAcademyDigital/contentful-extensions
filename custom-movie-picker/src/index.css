@@ -16,11 +16,11 @@ div {
   background-size: 100% 200%;
   height: 2.5rem;
   display: inline-block;
-  padding: 0px 50px;
+  padding: 0px 25px;
   color: #f7f9fa;
-  border: .0625rem solid #c3cfd5;
-  border-radius: .125rem;
-  font-size: .875rem;
+  border: 0.0625rem solid #c3cfd5;
+  border-radius: 0.125rem;
+  font-size: 0.875rem;
   cursor: pointer;
   margin: 10px;
 }
@@ -36,9 +36,10 @@ div {
   border: 1px solid #d3dce0;
   max-height: 2.5rem;
   color: #536171;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
-  font-size: .875rem;
-  padding: .65625rem;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+  font-size: 0.875rem;
+  padding: 0.65625rem;
   margin: 0;
   width: 100%;
   -webkit-appearance: textfield;
@@ -51,12 +52,13 @@ div {
   background-size: 100% 200%;
   height: 2.5rem;
   display: inline-block;
-  padding: 0px 50px;
+  padding: 0px 25px;
   color: #f7f9fa;
-  border: .0625rem solid #c3cfd5;
-  border-radius: .125rem;
-  font-size: .875rem;
+  border: 0.0625rem solid #c3cfd5;
+  border-radius: 0.125rem;
+  font-size: 0.875rem;
   cursor: pointer;
+  width: 200px;
 }
 
 .search-button:hover {
@@ -70,6 +72,7 @@ div {
   flex-direction: column;
   align-items: center;
   overflow: scroll;
+  /* background-color: #eff3f9; */
 }
 
 .input-container {
@@ -84,15 +87,29 @@ div {
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
-  overflow: scroll;
+  /* overflow: scroll; */
+  margin-top: 10px;
+  margin-bottom: 100px;
 }
 
 .movie-thumbnail {
   margin: 10px;
   display: flex;
-  flex-direction: column;
-  width: 20%;
+  flex-direction: row;
+  width: 500px;
   cursor: pointer;
+  background-color: #fff;
+  -webkit-box-shadow: 5px 5px 10px -1px rgba(0, 0, 0, 0.29);
+  -moz-box-shadow: 5px 5px 10px -1px rgba(0, 0, 0, 0.29);
+  box-shadow: 5px 5px 10px -1px rgba(0, 0, 0, 0.29);
+  border-radius: 5px;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+}
+
+h3 {
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
 }
 
 .movie-thumbnail:hover {
@@ -100,23 +117,178 @@ div {
   opacity: 0.6;
 }
 
-.movie-details {
+.poster-image {
+  max-width: 250px;
+  margin: 20px;
   display: flex;
   flex-direction: column;
-  margin-top: 15px;
+  justify-content: center;
+  align-items: center;
 }
 
-.movie-title {
-  font-size: 14px;
+img {
+  width: 100%;
+  height: auto;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  padding-top: 20px;
+  padding-right: 20px;
+  padding-bottom: 20px;
+  max-width: 500px;
+}
+
+.title {
+  font-size: 18px;
   line-height: 22px;
 }
 
-.movie-year {
+.year {
   font-size: 14px;
   line-height: 22px;
   color: #999999;
 }
 
-img {
-  width: 100%;
+.description {
+  font-size: 14px;
+  line-height: 22px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.lang {
+  font-size: 14px;
+  line-height: 22px;
+}
+
+i {
+  margin: 0 5px;
+}
+
+.movie-image {
+  max-width: 250px;
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.image-ctn {
+  margin: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 300px;
+  cursor: pointer;
+  background-color: #fff;
+  -webkit-box-shadow: 5px 5px 10px -1px rgba(0, 0, 0, 0.29);
+  -moz-box-shadow: 5px 5px 10px -1px rgba(0, 0, 0, 0.29);
+  box-shadow: 5px 5px 10px -1px rgba(0, 0, 0, 0.29);
+  border-radius: 5px;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+}
+
+.image-ctn:hover {
+  background-color: #ffffff;
+  opacity: 0.6;
+}
+
+.stream {
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+  font-size: 14px;
+  line-height: 18px;
+  color: #2d2f31;
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+.ctn {
+  height: min-content;
+}
+
+.provider-ctn {
+  display: flex;
+  flex-flow: row wrap;
+  min-height: 70px;
+}
+
+.provider {
+  display: flex;
+  flex-direction: row;
+  width: 260px;
+  margin: 5px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+  font-size: 14px;
+  line-height: 18px;
+  color: #2d2f31;
+}
+
+.provider-icon {
+  display: block;
+  width: 50px;
+  border-radius: 25px;
+}
+
+.provider-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.provider-title {
+  text-transform: uppercase;
+  margin-left: 15px;
+}
+
+.provider-info {
+  margin-left: 15px;
+  color: #999999;
+}
+
+.movie-selected {
+  margin: 20px 0 20px 0;
+  display: flex;
+  flex-direction: row;
+  height: 254px;
+  width: 500px;
+  background-color: #fff;
+  -webkit-box-shadow: 5px 5px 10px -1px rgba(0, 0, 0, 0.29);
+  -moz-box-shadow: 5px 5px 10px -1px rgba(0, 0, 0, 0.29);
+  box-shadow: 5px 5px 10px -1px rgba(0, 0, 0, 0.29);
+  border-radius: 5px;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+}
+
+.movie-selected-title {
+  font-size: 14px;
+  line-height: 24px;
+  color: #8091a5;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+  margin-top: 30px;
+}
+
+.custom-title {
+  font-size: 14px;
+  line-height: 24px;
+  color: #8091a5;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+  margin: 10px;
+}
+
+a {
+  color: #000;
+  text-decoration: none;
+  display: flex;
 }

@@ -4,16 +4,29 @@
   "srcdoc": "./build/index.html",
   "fieldTypes": ["Object"],
   "parameters": {
-    "instance": [{
-        "id": "apiUrl",
+    "instance": [
+      {
+        "id": "connectApiUrl",
         "type": "Symbol",
-        "name": "API URL",
+        "name": "OnConnect API URL",
         "required": true
       },
       {
-        "id": "apiKey",
+        "id": "connectApiKey",
         "type": "Symbol",
-        "name": "API KEY",
+        "name": "OnConnect API KEY",
+        "required": true
+      },
+      {
+        "id": "onApiUrl",
+        "type": "Symbol",
+        "name": "On API URL",
+        "required": true
+      },
+      {
+        "id": "onApiKey",
+        "type": "Symbol",
+        "name": "On API KEY",
         "required": true
       }
     ]
