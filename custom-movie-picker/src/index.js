@@ -8,52 +8,119 @@ import './index.css';
 var xml2js = require('xml2js');
 var moment = require('moment');
 var momentDurationFormatSetup = require('moment-duration-format');
+import {
+  TextInput,
+  Button,
+  Note,
+  Form,
+  TextField,
+  FieldGroup,
+  EntryCard,
+  Card,
+  Pill
+} from '@contentful/forma-36-react-components';
+import '@contentful/forma-36-react-components/dist/styles.css';
 
 export class App extends React.Component {
-  static propTypes = {
-    sdk: PropTypes.object.isRequired
-  };
-
-  detachExternalChangeHandler = null;
-
   constructor(props) {
     super(props);
     this.state = {
-      selectedMovie:
-        this.props.sdk.entry && this.props.sdk.entry.fields && this.props.sdk.entry.fields.movieId
-          ? this.props.sdk.entry.fields.movieId.getValue()
-          : '',
       movieAvailability:
         this.props.sdk.entry &&
         this.props.sdk.entry.fields &&
         this.props.sdk.entry.fields.movieAvailability
           ? this.props.sdk.entry.fields.movieAvailability.getValue()
           : '',
-      moviePicker:
-        this.props.sdk.entry &&
+      selectedMovie: {
+        ...(this.props.sdk.entry &&
         this.props.sdk.entry.fields &&
         this.props.sdk.entry.fields.moviePicker
           ? this.props.sdk.entry.fields.moviePicker.getValue()
+          : '')
+      },
+      tmsId:
+        this.props.sdk.entry && this.props.sdk.entry.fields && this.props.sdk.entry.fields.movieId
+          ? this.props.sdk.entry.fields.movieId.getValue()
           : '',
+      isCustom: false,
+      customMovie: {
+        title:
+          this.props.sdk.entry && this.props.sdk.entry.fields && this.props.sdk.entry.fields.title
+            ? this.props.sdk.entry.fields.title.getValue()
+            : '',
+        description:
+          this.props.sdk.entry &&
+          this.props.sdk.entry.fields &&
+          this.props.sdk.entry.fields.description
+            ? this.props.sdk.entry.fields.description.getValue()
+            : '',
+        logLine:
+          this.props.sdk.entry && this.props.sdk.entry.fields && this.props.sdk.entry.fields.logLine
+            ? this.props.sdk.entry.fields.logLine.getValue()
+            : '',
+        directors:
+          this.props.sdk.entry &&
+          this.props.sdk.entry.fields &&
+          this.props.sdk.entry.fields.directors
+            ? this.props.sdk.entry.fields.directors.getValue()
+            : '',
+        topCast:
+          this.props.sdk.entry && this.props.sdk.entry.fields && this.props.sdk.entry.fields.topCast
+            ? this.props.sdk.entry.fields.topCast.getValue()
+            : '',
+        releaseDate:
+          this.props.sdk.entry &&
+          this.props.sdk.entry.fields &&
+          this.props.sdk.entry.fields.releaseDate
+            ? this.props.sdk.entry.fields.releaseDate.getValue()
+            : '',
+        runTime:
+          this.props.sdk.entry && this.props.sdk.entry.fields && this.props.sdk.entry.fields.runTime
+            ? this.props.sdk.entry.fields.runTime.getValue()
+            : '',
+        rating:
+          this.props.sdk.entry && this.props.sdk.entry.fields && this.props.sdk.entry.fields.rating
+            ? this.props.sdk.entry.fields.rating.getValue()
+            : '',
+        genre:
+          this.props.sdk.entry &&
+          this.props.sdk.entry.fields &&
+          this.props.sdk.entry.fields.genre &&
+          this.props.sdk.entry.fields.genre.length > 0
+            ? this.props.sdk.entry.fields.genre.getValue()
+            : []
+      },
+      customGenre: [],
       error: false,
       isLoading: false,
       searchText: '',
       movies: [],
       images: [],
       searched: false,
-      isCustom: false
+      cardLoading: true
     };
+    this.timer = null;
   }
+
+  detachExternalChangeHandler = null;
 
   componentDidMount() {
     this.props.sdk.window.startAutoResizer();
-    this.props.sdk.parameters.invocation;
 
     if (
       this.props.sdk.parameters.invocation &&
       this.props.sdk.parameters.invocation.type === 'image'
     ) {
       this.fetchPictures(this.props.sdk.parameters.invocation.movieId);
+    } else if (
+      this.props.sdk.parameters.invocation &&
+      this.props.sdk.parameters.invocation.type === 'custom' &&
+      this.props.sdk.parameters.invocation.genre &&
+      this.props.sdk.parameters.invocation.genre.length > 0
+    ) {
+      this.setState({
+        customGenre: this.props.sdk.parameters.invocation.genre
+      });
     }
 
     if (
@@ -61,7 +128,7 @@ export class App extends React.Component {
       this.props.sdk.entry.fields &&
       this.props.sdk.entry.fields.movieId
     ) {
-      let ID = this.props.sdk.entry.fields.movieId.getValue();
+      let ID = this.state.tmsId;
       if (ID) {
         ID = ID.toLowerCase();
         if (ID.includes('custom') || !ID.includes('mv')) {
@@ -71,6 +138,20 @@ export class App extends React.Component {
         }
       }
     }
+
+    this.timer = setTimeout(() => {
+      this.setState({
+        cardLoading: false
+      });
+    }, 500);
+
+    // console.log(this.props.sdk.entry.fields);
+    // console.log(this.state);
+    // console.log(this.props.sdk.parameters.invocation);
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.timer);
   }
 
   onChange = e => {
@@ -169,9 +250,6 @@ export class App extends React.Component {
       })
       .then(data => {
         if (data) {
-          this.setState({
-            selectedMovie: data.program.tmsId
-          });
           let details = this.getMovieDetails(data.program.tmsId);
           let stream = this.getMovieStream(data.program.tmsId);
 
@@ -265,6 +343,7 @@ export class App extends React.Component {
   };
 
   parseMovieStream = data => {
+    // console.log(data);
     var movies = [];
     let providers = [];
     let parsed = [];
@@ -273,6 +352,7 @@ export class App extends React.Component {
       data.on &&
       data.on.programAvailabilities &&
       data.on.programAvailabilities.length > 0 &&
+      data.on.programAvailabilities[0].programAvailability &&
       data.on.programAvailabilities[0].programAvailability.length > 0
     ) {
       // console.log(data.on.programAvailabilities[0].programAvailability);
@@ -352,13 +432,18 @@ export class App extends React.Component {
   saveMovie = async (movie, stream, imagePopup = false) => {
     // console.log(movie);
     // console.log(stream);
-    this.props.sdk.entry.fields.tags.removeValue();
-    this.props.sdk.entry.fields.genre.removeValue();
-    this.props.sdk.entry.fields.image.getValue();
 
     if (movie) {
+      this.props.sdk.entry.fields.tags.removeValue();
+      this.props.sdk.entry.fields.genre.removeValue();
+      this.props.sdk.entry.fields.image.removeValue();
+      this.props.sdk.entry.fields.movieAvailability.removeValue();
+      this.props.sdk.entry.fields.moviePicker.removeValue();
       this.setState({
-        moviePicker: movie
+        movieAvailability: [],
+        selectedMovie: movie,
+        tmsId: movie.tmsId,
+        isCustom: false
       });
       let directors = movie.directors.length > 0 ? movie.directors.join(', ') : '';
       let topCast =
@@ -370,7 +455,7 @@ export class App extends React.Component {
               return accum;
             }, [])
           : '';
-      let duration = moment.duration(movie.runTime, 'minutes').format('mm');
+      let duration = movie.runTime ? moment.duration(movie.runTime, 'minutes').format('mm') : '';
       let rating =
         movie.ratings && movie.ratings.length > 0 && movie.ratings[0].code
           ? movie.ratings[0].code
@@ -390,29 +475,36 @@ export class App extends React.Component {
       this.props.sdk.entry.fields.genre.setValue(movie.genres);
       this.props.sdk.entry.fields.rating.setValue(rating);
       this.props.sdk.entry.fields.tags.setValue(tags);
+
       if (stream) {
         this.props.sdk.entry.fields.movieAvailability.setValue(stream);
         this.setState({
           movieAvailability: stream
         });
       }
-      const rawAsset = await this.createAssetWithImageUrl(
-        movie.preferredImage.uri,
-        '',
-        this.props.sdk.locales.default,
-        movie.title
-      );
+
+      let rawAsset;
+      if (movie.preferredImage.uri) {
+        rawAsset = await this.createAssetWithImageUrl(
+          movie.preferredImage.uri,
+          '',
+          this.props.sdk.locales.default,
+          movie.title
+        );
+      }
+
       this.processAndPublishPoster(rawAsset, this.props.sdk.locales.default);
-      this.props.sdk.notifier.success('Movie successfully saved!');
+
       if (imagePopup) {
         this.openImageSelect();
       }
+
+      this.props.sdk.notifier.success('Movie successfully saved!');
       this.props.sdk.window.updateHeight(500);
     }
   };
 
-  // Image search
-
+  // Image Search
   openImageSelect = () => {
     let { connectApiKey, connectApiUrl } = this.props.sdk.parameters.instance;
     this.props.sdk.dialogs
@@ -423,7 +515,7 @@ export class App extends React.Component {
           connectApiUrl,
           connectApiKey,
           type: 'image',
-          movieId: this.state.selectedMovie
+          movieId: this.state.tmsId
         }
       })
       .then(data => {
@@ -488,14 +580,119 @@ export class App extends React.Component {
     }
   };
 
+  // Custom Movie
+  openCustomMovie = () => {
+    this.props.sdk.dialogs
+      .openExtension({
+        title: 'Add Custom Movie',
+        shouldCloseOnOverlayClick: true,
+        parameters: { type: 'custom', ...this.state.customMovie, tmsId: this.state.tmsId }
+      })
+      .then(data => {
+        this.saveCustomMovie(data);
+      });
+  };
+
+  generateCustomID = (min, max) => {
+    return Math.floor(Math.random() * (max - min) + min);
+  };
+
+  saveCustomMovie = data => {
+    if (data) {
+      let {
+        title,
+        description,
+        logLine,
+        directors,
+        topCast,
+        releaseDate,
+        rating,
+        runTime,
+        tmsId,
+        genre
+      } = data;
+      tmsId = tmsId ? tmsId : 'custom_' + this.generateCustomID(0, 100000000);
+      this.setState({
+        isCustom: true,
+        tmsId,
+        customMovie: {
+          ...data
+        }
+      });
+      this.props.sdk.entry.fields.title.setValue(title);
+      this.props.sdk.entry.fields.adminTitle.setValue(title);
+      this.props.sdk.entry.fields.description.setValue(description);
+      this.props.sdk.entry.fields.logLine.setValue(logLine);
+      this.props.sdk.entry.fields.directors.setValue(directors);
+      this.props.sdk.entry.fields.topCast.setValue(topCast);
+      if (releaseDate) {
+        this.props.sdk.entry.fields.releaseDate.setValue(releaseDate);
+      } else {
+        this.props.sdk.entry.fields.releaseDate.removeValue();
+      }
+      this.props.sdk.entry.fields.rating.setValue(rating);
+      this.props.sdk.entry.fields.runTime.setValue(runTime);
+      if (genre.length > 0) {
+        this.props.sdk.entry.fields.genre.setValue(genre);
+      }
+      this.props.sdk.entry.fields.movieId.setValue(tmsId);
+      this.props.sdk.notifier.success('Movie successfully saved!');
+    }
+  };
+
+  onCustomSubmit = event => {
+    event.preventDefault();
+    let formData = {
+      title: event.target.title.value,
+      description: event.target.description.value,
+      logLine: event.target.logLine.value,
+      directors: event.target.directors.value,
+      topCast: event.target.topCast.value,
+      releaseDate: event.target.releaseDate.value,
+      rating: event.target.rating.value,
+      runTime: event.target.runTime.value,
+      tmsId: event.target.tmsId.value,
+      genre: this.state.customGenre
+    };
+    this.props.sdk.close(formData);
+  };
+
+  handleGenre = genre => {
+    if (genre && this.state.customGenre && this.state.customGenre.indexOf(genre) === -1) {
+      this.setState({
+        customGenre: [genre, ...this.state.customGenre]
+      });
+    }
+  };
+
+  deleteGenre = genre => {
+    if (genre && this.state.customGenre && this.state.customGenre.length > 0) {
+      const index = this.state.customGenre.indexOf(genre);
+      let genres = [...this.state.customGenre];
+      if (index > -1) {
+        genres.splice(index, 1);
+        this.setState({
+          customGenre: genres
+        });
+      }
+    }
+  };
+
   render() {
     // console.log(this.state.movies);
     // Create master array of search results
     if (this.state.movies.length > 0) {
       var movies = this.state.movies.map(movie => {
-        let duration = moment.duration(movie.program.runTime, 'minutes').format('mm');
+        // console.log(movie);
+        let duration = movie.program.runTime
+          ? moment.duration(movie.program.runTime, 'minutes').format('mm')
+          : '';
+        let ratings =
+          movie.program.ratings && movie.program.ratings.length > 0 && movie.program.ratings[0].code
+            ? movie.program.ratings[0].code
+            : '';
         return (
-          <div
+          <Card
             key={movie.program.tsmId}
             className="movie-thumbnail"
             onClick={this.onMovieSelect.bind(this, movie)}>
@@ -506,10 +703,15 @@ export class App extends React.Component {
               <div className="title">{movie.program.title}</div>
               <div className="year">
                 {duration && <span className="year">{duration} MIN</span>}
-                {movie.program.ratings && movie.program.ratings.length > 0 && (
-                  <span className="year">&nbsp;|&nbsp;{movie.program.ratings[0].code}</span>
+                {duration && ratings && <span className="year">&nbsp;|&nbsp;{ratings}</span>}
+                {!duration && ratings && <span className="year">{ratings}</span>}
+                {ratings && movie.program.releaseYear && (
+                  <span className="year">&nbsp;|&nbsp;{movie.program.releaseYear}</span>
                 )}
-                {movie.program.releaseYear && (
+                {!movie.program.ratings && !duration && movie.program.releaseYear && (
+                  <span className="year">{movie.program.releaseYear}</span>
+                )}
+                {!movie.program.ratings && duration && movie.program.releaseYear && (
                   <span className="year">&nbsp;|&nbsp;{movie.program.releaseYear}</span>
                 )}
               </div>
@@ -519,7 +721,7 @@ export class App extends React.Component {
                 Description Language: {movie.program.descriptionLang.toUpperCase()}
               </div>
             </div>
-          </div>
+          </Card>
         );
       });
     }
@@ -529,17 +731,21 @@ export class App extends React.Component {
       var images = this.state.images.map((image, i) => {
         if (image.aspect === '16x9') {
           return (
-            <div key={i} className="image-ctn" onClick={this.onImageSelect.bind(this, image)}>
+            <Card
+              padding="none"
+              key={i}
+              className="image-ctn"
+              onClick={this.onImageSelect.bind(this, image)}>
               <div className="movie-image">
                 <img src={image.uri} />
               </div>
-              <div className="details">
+              <div className="image-details">
                 <div className="description">
                   {image.category}&nbsp;&#183;&nbsp;{image.aspect}&nbsp;&#183;&nbsp;{image.width} x{' '}
                   {image.height}
                 </div>
               </div>
-            </div>
+            </Card>
           );
         }
       });
@@ -572,37 +778,48 @@ export class App extends React.Component {
         let providerTemp = provider.provider.replace(/[^a-zA-Z ]/g, '').toLowerCase();
         if (providerTemp.includes('netflix')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/4YFQdcYU5R2fdqTxu2W2QY/9d37ca7da819598bdee2acca3cbe7443/netflix.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/6rjO8gDtwuN0vYOtcjwn7X/f03774d28f0fd7734ac320a20931aa79/netflix.png';
         } else if (providerTemp.includes('hulu')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/7gRzHIFlA13XbvZ8UNXDDm/000d0618e948f71ee15e95bf2592b3d9/hulu.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/1jr1hmTLn4i10yS1VtvPhO/73eeaa767b883fc169a27611e258fbb5/hulu.png';
         } else if (providerTemp.includes('disney')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/4ChfTvLZKtuDeIf0L0qagG/4b330b4b905d1a147f27d0720452fb4d/disney.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/3ACkzU5BItSTmL9MHGQ2yh/603ae3c419f0baa609f5cccd91c78bed/disney.png';
         } else if (providerTemp.includes('vudu')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/5EowU0JzbCuLDNyr7d5IHr/cdd93ecf826d0418a2e6db721c7afb3d/vudu.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/1UqkgoLo8OXlGPFpO9pXwK/d0eff392359b78bd95c49500448700c4/vudu.png';
         } else if (providerTemp.includes('youtube')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/5gVXZqOPkvWmnHvrAvj1xW/a0a32f521fc5dc37b06f235253ba1b37/youtube.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/3L20OG8Huo0FXp9oISdj3p/9ecf65a53e9ecc7d417cc313cb0c6088/youtube.png';
         } else if (providerTemp.includes('amazon')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/4YFQdcYU5R2fdqTxu2W2QY/9d37ca7da819598bdee2acca3cbe7443/amazon.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/5Tt2QHfgGOiJPuHalmeur0/9fa20f233a0aab832f28998fdb735f37/amazon.png';
         } else if (providerTemp.includes('itunes')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/74ZB2EY6sN0KNH2EujEZDB/2d4707f2f489a1f2f477b86a324befc6/itunes.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/7H37IVPPF790DhfQSJP1Ui/d37b13fcaafe579fa37ad9fafa8993cd/itunes.png';
         } else if (providerTemp.includes('hbo') && providerTemp.includes('go')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/5RJ7YS18VMv6WA7Ug2eDCH/16dba9775ee685431947ab172a643090/hbogo.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/6qQUzYMMlNnqmd9Sv1NKGg/6a44477d06e1e0c33b766a33e380884b/hbogo.png';
         } else if (providerTemp.includes('hbo')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/1ZynsjGxKb9wjuxuqFHi8I/35cbc5b0ad3039d3595df0b8ed41656c/hbo.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/5fkw5oXi9SA2cUFmY4Er2d/47172c47db1cf6c75faebb53647e82de/hbo.png';
         } else if (providerTemp.includes('starz')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/45FvBtZSguSEdVEd5f1ERS/5788c06f88c35578e7be4c8b9f9c574e/starz.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/1zDRiC4TzanVSaO72M34ED/ee6227a08da7fc5b0bf863487743cc83/starz.png';
+        } else if (providerTemp.includes('showtime')) {
+          imageLink =
+            'https://images.ctfassets.net/3m6gg2lxde82/7wdyV1pk52Vi9JPLyXP7RQ/781a39b84c2f373a9b8953f67f9e1ce9/showtime.png';
+        } else if (providerTemp.includes('tnt')) {
+          imageLink =
+            'https://images.ctfassets.net/3m6gg2lxde82/6LOuFrsli1onqRddJdqHMp/35cc93fe19896370e4211621bbaf755c/tnt.png';
+        } else if (providerTemp.includes('tbs')) {
+          imageLink =
+            'https://images.ctfassets.net/3m6gg2lxde82/42zUZvMNQgMiOy4QGgUpW/fcfb5c5468270444795964d794d511cd/tbs.png';
+        } else {
+          imageLink =
+            'https://images.ctfassets.net/3m6gg2lxde82/bxMjODx6NyDQe5BBPDyUB/9243c9f20e05e16744bf876832469c8e/generic.png';
         }
 
-        // console.log(quality !== '');
         return (
           <div key={i} className="provider">
             <a href={link} target="_blank">
@@ -626,61 +843,69 @@ export class App extends React.Component {
     }
 
     if (this.props.sdk.location.is(locations.LOCATION_ENTRY_FIELD)) {
-      let selectedMovieObj = this.state.moviePicker;
-      let duration = '';
-      if (selectedMovieObj && selectedMovieObj.runTime) {
-        duration = moment.duration(selectedMovieObj.runTime, 'minutes').format('mm');
-      }
+      let {
+        runTime,
+        preferredImage,
+        title,
+        ratings,
+        shortDescription,
+        titleLang,
+        descriptionLang,
+        releaseYear
+      } = this.state.selectedMovie;
+      let { isCustom } = this.state;
+
+      let duration = runTime ? moment.duration(runTime, 'minutes').format('mm') : '';
+      let rating = ratings && ratings.length > 0 && ratings[0].code ? ratings[0].code : '';
 
       return (
         <div className="ctn">
-          <button className="add-button" onClick={this.openMovieSelect}>
-            <i className="fas fa-plus"></i> Add Movie
-          </button>
-          {/* <button className="add-button" onClick={this.openMovieSelect}>
-            <i className="fas fa-plus"></i> Add Custom
-          </button> */}
-          {this.state.selectedMovie && !this.state.isCustom && (
-            <button className="add-button" onClick={this.openImageSelect}>
+          <Button className="add-button" onClick={this.openMovieSelect}>
+            <i className="fas fa-plus"></i> Search Movie
+          </Button>
+          {!isCustom && !this.state.selectedMovie.tmsId && (
+            <Button className="add-button" onClick={this.openCustomMovie}>
+              <i className="fas fa-plus"></i> Add Custom Movie
+            </Button>
+          )}
+          {isCustom && !this.state.selectedMovie.tmsId && (
+            <Button className="add-button" onClick={this.openCustomMovie}>
+              <i className="fas fa-user-edit"></i> Edit Custom Movie
+            </Button>
+          )}
+          {!isCustom && this.state.selectedMovie.tmsId && (
+            <Button className="add-button" onClick={this.openImageSelect}>
               <i className="fas fa-images"></i> Select Image
-            </button>
+            </Button>
           )}
-          {this.state.selectedMovie && !this.state.isCustom && (
-            <button
-              className="add-button"
-              onClick={this.refreshData.bind(this, this.state.selectedMovie)}>
+          {!isCustom && this.state.selectedMovie.tmsId && (
+            <Button className="add-button" onClick={this.refreshData.bind(this, this.state.tmsId)}>
               <i className="fas fa-sync"></i> Reset Data
-            </button>
+            </Button>
           )}
-          {this.state.isCustom && <div className="custom-title">Note: This is a custom movie.</div>}
-          {this.state.moviePicker && (
-            <>
-              <div className="movie-selected-title">Selected Movie</div>
-              <div className="movie-selected">
-                <div className="poster-image">
-                  <img src={selectedMovieObj.preferredImage.uri} />
-                </div>
-                <div className="details">
-                  <div className="title">{selectedMovieObj.title}</div>
-                  <div className="year">
-                    {duration && <span className="year">{duration} MIN</span>}
-                    {selectedMovieObj.ratings && selectedMovieObj.ratings.length > 0 && (
-                      <span className="year">&nbsp;|&nbsp;{selectedMovieObj.ratings[0].code}</span>
-                    )}
-                    {selectedMovieObj.releaseYear && (
-                      <span className="year">&nbsp;|&nbsp;{selectedMovieObj.releaseYear}</span>
-                    )}
-                  </div>
-                  <div className="description">{selectedMovieObj.shortDescription}</div>
-                  <div className="lang">
-                    Title Language: {selectedMovieObj.titleLang.toUpperCase()}
-                  </div>
-                  <div className="lang">
-                    Description Language: {selectedMovieObj.descriptionLang.toUpperCase()}
-                  </div>
-                </div>
-              </div>
-            </>
+          {isCustom && (
+            <Note noteType="warning" testId="cf-ui-note" title="">
+              This is a custom movie.
+            </Note>
+          )}
+          {this.state.selectedMovie.preferredImage &&
+            this.state.selectedMovie.title &&
+            this.state.selectedMovie.shortDescription && (
+              <>
+                <div className="movie-selected-title">Selected Movie</div>
+                <EntryCard
+                  title={`${title} (${releaseYear})`}
+                  loading={this.state.cardLoading}
+                  description={shortDescription}
+                  className="movie-selected"
+                  size="default"
+                  thumbnailElement={<img src={preferredImage.uri} />}></EntryCard>
+              </>
+            )}
+          {this.state.selectedMovie.title && !streamData && (
+            <Note noteType="warning" testId="cf-ui-note" title="">
+              No streaming data is available for this title.
+            </Note>
           )}
           {streamData && (
             <>
@@ -698,8 +923,8 @@ export class App extends React.Component {
       return (
         <div className="dialog-container">
           <div className="input-container">
-            <input
-              className="search-input"
+            <TextInput
+              // className="search-input"
               type="text"
               placeholder="Search Movie..."
               onChange={this.onChange}
@@ -710,13 +935,13 @@ export class App extends React.Component {
               }}
               value={this.state.searchText}
             />
-            <button
+            <Button
               className="search-button"
               onClick={() => {
                 this.fetchMovies(this.state.searchText);
               }}>
               <i className="fas fa-search"></i> Search
-            </button>
+            </Button>
           </div>
 
           <div>
@@ -821,8 +1046,166 @@ export class App extends React.Component {
           )}
         </div>
       );
+    } else if (
+      this.props.sdk.location.is(locations.LOCATION_DIALOG) &&
+      this.props.sdk.parameters.invocation &&
+      this.props.sdk.parameters.invocation.type === 'custom'
+    ) {
+      let {
+        title,
+        description,
+        logLine,
+        directors,
+        topCast,
+        releaseDate,
+        rating,
+        runTime,
+        tmsId
+      } = this.props.sdk.parameters.invocation;
+      return (
+        <div className="custom-container">
+          <Form onSubmit={this.onCustomSubmit}>
+            <FieldGroup>
+              <TextField
+                required
+                countCharacters
+                type="text"
+                className="textfield"
+                name="title"
+                id="nameInput"
+                labelText="Title"
+                value={title}
+                textInputProps={{ maxLength: 255 }}
+                width="large"
+              />
+              <TextField
+                textarea
+                type="text"
+                className="textfield"
+                name="description"
+                id="descriptionInput"
+                labelText="Description"
+                value={description}
+                width="large"
+              />
+              <TextField
+                countCharacters
+                type="text"
+                className="textfield"
+                name="logLine"
+                id="logInput"
+                labelText="Logline"
+                value={logLine}
+                textInputProps={{ maxLength: 255 }}
+                width="large"
+              />
+              <TextField
+                countCharacters
+                type="text"
+                className="textfield"
+                name="directors"
+                id="directorsInput"
+                labelText="Directors"
+                value={directors}
+                textInputProps={{ maxLength: 255 }}
+                width="large"
+                helpText="Enter names separated by commas"
+              />
+              <TextField
+                countCharacters
+                type="text"
+                className="textfield"
+                name="topCast"
+                id="topCastInput"
+                labelText="Top Cast"
+                value={topCast}
+                textInputProps={{ maxLength: 255 }}
+                width="large"
+                helpText="Enter names separated by commas"
+              />
+              <TextField
+                className="textfield"
+                name="releaseDate"
+                id="releaseDateInput"
+                labelText="Release Date"
+                value={releaseDate}
+                width="large"
+                textInputProps={{ type: 'date' }}
+              />
+              <TextField
+                type="text"
+                className="textfield"
+                name="rating"
+                id="raingInput"
+                labelText="Rating"
+                value={rating}
+                width="large"
+              />
+              <TextField
+                className="textfield"
+                name="runTime"
+                id="runtimeInput"
+                labelText="Run Time"
+                value={runTime}
+                width="large"
+                textInputProps={{ type: 'number' }}
+              />
+              <TextField
+                className="textfield"
+                name="genre"
+                id="genreInput"
+                labelText="Genre"
+                width="large"
+                textInputProps={{
+                  onKeyPress: e => {
+                    if (event.key === 'Enter') {
+                      e.preventDefault();
+                      this.handleGenre(e.target.value);
+                    }
+                  }
+                }}
+              />
+              <div className="pill-ctn">
+                {this.state.customGenre &&
+                  this.state.customGenre.length > 0 &&
+                  this.state.customGenre.map(genre => {
+                    return (
+                      <Pill
+                        className="pill"
+                        label={genre}
+                        onClose={this.deleteGenre.bind(this, genre)}
+                      />
+                    );
+                  })}
+              </div>
+              <TextField
+                disabled
+                type="text"
+                className="textfield"
+                name="tmsId"
+                id="tmsIdInput"
+                labelText="Movie ID"
+                value={tmsId}
+                width="large"
+                textInputProps={{ disabled: true }}
+              />
+            </FieldGroup>
+            <FieldGroup>
+              <Button type="submit" value="Submit">
+                Save Movie
+              </Button>
+            </FieldGroup>
+          </Form>
+        </div>
+      );
+    } else {
+      return null;
     }
   }
+
+  static propTypes = {
+    sdk: PropTypes.object.isRequired
+  };
 }
 
 init(sdk => {
