@@ -83,10 +83,7 @@ export class App extends React.Component {
             ? this.props.sdk.entry.fields.rating.getValue()
             : '',
         genre:
-          this.props.sdk.entry &&
-          this.props.sdk.entry.fields &&
-          this.props.sdk.entry.fields.genre &&
-          this.props.sdk.entry.fields.genre.length > 0
+          this.props.sdk.entry && this.props.sdk.entry.fields && this.props.sdk.entry.fields.genre
             ? this.props.sdk.entry.fields.genre.getValue()
             : []
       },
@@ -97,7 +94,8 @@ export class App extends React.Component {
       movies: [],
       images: [],
       searched: false,
-      cardLoading: true
+      cardLoading: true,
+      genreInput: ''
     };
     this.timer = null;
   }
@@ -106,7 +104,6 @@ export class App extends React.Component {
 
   componentDidMount() {
     this.props.sdk.window.startAutoResizer();
-
     if (
       this.props.sdk.parameters.invocation &&
       this.props.sdk.parameters.invocation.type === 'image'
@@ -432,7 +429,6 @@ export class App extends React.Component {
   saveMovie = async (movie, stream, imagePopup = false) => {
     // console.log(movie);
     // console.log(stream);
-
     if (movie) {
       this.props.sdk.entry.fields.tags.removeValue();
       this.props.sdk.entry.fields.genre.removeValue();
@@ -445,22 +441,28 @@ export class App extends React.Component {
         tmsId: movie.tmsId,
         isCustom: false
       });
-      let directors = movie.directors.length > 0 ? movie.directors.join(', ') : '';
+      let directors =
+        movie.directors !== undefined && movie.directors.length > 0
+          ? movie.directors.join(', ')
+          : '';
       let topCast =
-        movie.cast.length > 0
+        movie.cast !== undefined && movie.cast.length > 0
           ? movie.cast.reduce((accum, cast, i) => {
               if (i < 3) {
                 accum.push(cast.name);
               }
               return accum;
             }, [])
-          : '';
-      let duration = movie.runTime ? moment.duration(movie.runTime, 'minutes').format('mm') : '';
+          : [];
+      let duration =
+        movie.runTime !== undefined ? moment.duration(movie.runTime, 'minutes').format('mm') : '';
       let rating =
-        movie.ratings && movie.ratings.length > 0 && movie.ratings[0].code
+        movie.ratings !== undefined &&
+        movie.ratings.length > 0 &&
+        movie.ratings[0].code !== undefined
           ? movie.ratings[0].code
           : '';
-      let tags = movie.keywords ? Object.values(movie.keywords).flat() : [];
+      let tags = movie.keywords !== undefined ? Object.values(movie.keywords).flat() : [];
 
       this.props.sdk.entry.fields.moviePicker.setValue(movie);
       this.props.sdk.entry.fields.title.setValue(movie.title);
@@ -484,7 +486,7 @@ export class App extends React.Component {
       }
 
       let rawAsset;
-      if (movie.preferredImage.uri) {
+      if (movie.preferredImage.uri !== undefined) {
         rawAsset = await this.createAssetWithImageUrl(
           movie.preferredImage.uri,
           '',
@@ -492,13 +494,10 @@ export class App extends React.Component {
           movie.title
         );
       }
-
       this.processAndPublishPoster(rawAsset, this.props.sdk.locales.default);
-
       if (imagePopup) {
         this.openImageSelect();
       }
-
       this.props.sdk.notifier.success('Movie successfully saved!');
       this.props.sdk.window.updateHeight(500);
     }
@@ -611,7 +610,8 @@ export class App extends React.Component {
         tmsId,
         genre
       } = data;
-      tmsId = tmsId ? tmsId : 'custom_' + this.generateCustomID(0, 100000000);
+      tmsId =
+        tmsId && tmsId.includes('CUSTOM') ? tmsId : 'CUSTOM_' + this.generateCustomID(0, 100000000);
       this.setState({
         isCustom: true,
         tmsId,
@@ -654,14 +654,24 @@ export class App extends React.Component {
       tmsId: event.target.tmsId.value,
       genre: this.state.customGenre
     };
+    // console.log(formData);
     this.props.sdk.close(formData);
   };
 
-  handleGenre = genre => {
-    if (genre && this.state.customGenre && this.state.customGenre.indexOf(genre) === -1) {
-      this.setState({
-        customGenre: [genre, ...this.state.customGenre]
-      });
+  handleGenre = () => {
+    if (
+      this.state.genreInput &&
+      this.state.customGenre &&
+      this.state.customGenre.indexOf(this.state.genreInput) === -1
+    ) {
+      this.setState(
+        {
+          customGenre: [this.state.genreInput.trim(), ...this.state.customGenre]
+        },
+        this.setState({
+          genreInput: ''
+        })
+      );
     }
   };
 
@@ -676,6 +686,12 @@ export class App extends React.Component {
         });
       }
     }
+  };
+
+  handleGenreInput = e => {
+    this.setState({
+      genreInput: e.target.value
+    });
   };
 
   render() {
@@ -778,46 +794,55 @@ export class App extends React.Component {
         let providerTemp = provider.provider.replace(/[^a-zA-Z ]/g, '').toLowerCase();
         if (providerTemp.includes('netflix')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/6rjO8gDtwuN0vYOtcjwn7X/f03774d28f0fd7734ac320a20931aa79/netflix.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/6rjO8gDtwuN0vYOtcjwn7X/219261f2782c8e3c0537761e89cbe7be/netflix.png';
         } else if (providerTemp.includes('hulu')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/1jr1hmTLn4i10yS1VtvPhO/73eeaa767b883fc169a27611e258fbb5/hulu.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/1jr1hmTLn4i10yS1VtvPhO/4515e723927fadb54882db90ce75ac20/hulu.png';
         } else if (providerTemp.includes('disney')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/3ACkzU5BItSTmL9MHGQ2yh/603ae3c419f0baa609f5cccd91c78bed/disney.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/3ACkzU5BItSTmL9MHGQ2yh/e3e0b0805c68e396aa287437aafcfae4/disney.png';
         } else if (providerTemp.includes('vudu')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/1UqkgoLo8OXlGPFpO9pXwK/d0eff392359b78bd95c49500448700c4/vudu.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/1UqkgoLo8OXlGPFpO9pXwK/85e45298c8dc25afabba1e405587d612/vudu.png';
         } else if (providerTemp.includes('youtube')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/3L20OG8Huo0FXp9oISdj3p/9ecf65a53e9ecc7d417cc313cb0c6088/youtube.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/3L20OG8Huo0FXp9oISdj3p/d0a864ce42258f1fc31cf6f113794226/youtube.png';
         } else if (providerTemp.includes('amazon')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/5Tt2QHfgGOiJPuHalmeur0/9fa20f233a0aab832f28998fdb735f37/amazon.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/5Tt2QHfgGOiJPuHalmeur0/aeaa15a97edddc94dac0593e6ce42c9c/amazon.png';
         } else if (providerTemp.includes('itunes')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/7H37IVPPF790DhfQSJP1Ui/d37b13fcaafe579fa37ad9fafa8993cd/itunes.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/7H37IVPPF790DhfQSJP1Ui/ca38ed8722efaa0cbe50f5e32b07d362/itunes.png';
         } else if (providerTemp.includes('hbo') && providerTemp.includes('go')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/6qQUzYMMlNnqmd9Sv1NKGg/6a44477d06e1e0c33b766a33e380884b/hbogo.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/6qQUzYMMlNnqmd9Sv1NKGg/2b572d9c54b8ae1114a25cdca9211a15/hbogo.png';
+        } else if (providerTemp.includes('hbo') && providerTemp.includes('max')) {
+          imageLink =
+            'https://images.ctfassets.net/3m6gg2lxde82/5a5yd1KhGLAs7W2Fkk8Lj6/9a0f2c10a97cae16b7de410d29a836e5/hbomax.png';
         } else if (providerTemp.includes('hbo')) {
           imageLink =
             'https://images.ctfassets.net/3m6gg2lxde82/5fkw5oXi9SA2cUFmY4Er2d/47172c47db1cf6c75faebb53647e82de/hbo.png';
         } else if (providerTemp.includes('starz')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/1zDRiC4TzanVSaO72M34ED/ee6227a08da7fc5b0bf863487743cc83/starz.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/1zDRiC4TzanVSaO72M34ED/1ab76757f12b3a5b4b49c1ecd060724d/starz.png';
         } else if (providerTemp.includes('showtime')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/7wdyV1pk52Vi9JPLyXP7RQ/781a39b84c2f373a9b8953f67f9e1ce9/showtime.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/7wdyV1pk52Vi9JPLyXP7RQ/b86f40b7b8d72beaa67975089293a383/showtime.png';
         } else if (providerTemp.includes('tnt')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/6LOuFrsli1onqRddJdqHMp/35cc93fe19896370e4211621bbaf755c/tnt.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/6LOuFrsli1onqRddJdqHMp/2078fb4d21bc08f07f90073094a9af5f/tnt.png';
         } else if (providerTemp.includes('tbs')) {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/42zUZvMNQgMiOy4QGgUpW/fcfb5c5468270444795964d794d511cd/tbs.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/42zUZvMNQgMiOy4QGgUpW/e9624a22dafeb0ef3ee937a3416d08cf/tbs.png';
+        } else if (providerTemp.includes('google')) {
+          imageLink =
+            'https://images.ctfassets.net/3m6gg2lxde82/7idK4NkHKDz5y9X0Up69J9/4142201ca29570260493ce3e9219d05b/google.png';
+        } else if (providerTemp.includes('usa')) {
+          imageLink =
+            'https://images.ctfassets.net/3m6gg2lxde82/6Pm4G8uFfIKqQ0xartJSI/ee3aa3a0d2a8792944b135a7199cd888/usa.png';
         } else {
           imageLink =
-            'https://images.ctfassets.net/3m6gg2lxde82/bxMjODx6NyDQe5BBPDyUB/9243c9f20e05e16744bf876832469c8e/generic.png';
+            'https://images.ctfassets.net/3m6gg2lxde82/bxMjODx6NyDQe5BBPDyUB/63531e68d813b77518443279d091a28b/generic.png';
         }
 
         return (
@@ -843,20 +868,11 @@ export class App extends React.Component {
     }
 
     if (this.props.sdk.location.is(locations.LOCATION_ENTRY_FIELD)) {
-      let {
-        runTime,
-        preferredImage,
-        title,
-        ratings,
-        shortDescription,
-        titleLang,
-        descriptionLang,
-        releaseYear
-      } = this.state.selectedMovie;
+      let { preferredImage, title, shortDescription, releaseYear } = this.state.selectedMovie;
       let { isCustom } = this.state;
 
-      let duration = runTime ? moment.duration(runTime, 'minutes').format('mm') : '';
-      let rating = ratings && ratings.length > 0 && ratings[0].code ? ratings[0].code : '';
+      // let duration = runTime ? moment.duration(runTime, 'minutes').format('mm') : '';
+      // let rating = ratings && ratings.length > 0 && ratings[0].code ? ratings[0].code : '';
 
       return (
         <div className="ctn">
@@ -878,7 +894,7 @@ export class App extends React.Component {
               <i className="fas fa-images"></i> Select Image
             </Button>
           )}
-          {!isCustom && this.state.selectedMovie.tmsId && (
+          {!isCustom && this.state.tmsId && (
             <Button className="add-button" onClick={this.refreshData.bind(this, this.state.tmsId)}>
               <i className="fas fa-sync"></i> Reset Data
             </Button>
@@ -904,7 +920,7 @@ export class App extends React.Component {
             )}
           {this.state.selectedMovie.title && !streamData && (
             <Note noteType="warning" testId="cf-ui-note" title="">
-              No streaming data is available for this title.
+              No streaming data is available for this title at this time.
             </Note>
           )}
           {streamData && (
@@ -924,7 +940,6 @@ export class App extends React.Component {
         <div className="dialog-container">
           <div className="input-container">
             <TextInput
-              // className="search-input"
               type="text"
               placeholder="Search Movie..."
               onChange={this.onChange}
@@ -1039,7 +1054,7 @@ export class App extends React.Component {
               </svg>
             )}
           </div>
-          {images && images.length > 0 && !this.state.isLoading ? (
+          {!this.state.isLoading && images && images.length > 0 ? (
             <div className="movie-container">{images}</div>
           ) : (
             <h3>No 16x9 images found.</h3>
@@ -1079,6 +1094,7 @@ export class App extends React.Component {
                 width="large"
               />
               <TextField
+                required
                 textarea
                 type="text"
                 className="textfield"
@@ -1089,6 +1105,7 @@ export class App extends React.Component {
                 width="large"
               />
               <TextField
+                required
                 countCharacters
                 type="text"
                 className="textfield"
@@ -1124,6 +1141,7 @@ export class App extends React.Component {
                 helpText="Enter names separated by commas"
               />
               <TextField
+                required
                 className="textfield"
                 name="releaseDate"
                 id="releaseDateInput"
@@ -1133,6 +1151,7 @@ export class App extends React.Component {
                 textInputProps={{ type: 'date' }}
               />
               <TextField
+                required
                 type="text"
                 className="textfield"
                 name="rating"
@@ -1142,6 +1161,7 @@ export class App extends React.Component {
                 width="large"
               />
               <TextField
+                required
                 className="textfield"
                 name="runTime"
                 id="runtimeInput"
@@ -1149,6 +1169,7 @@ export class App extends React.Component {
                 value={runTime}
                 width="large"
                 textInputProps={{ type: 'number' }}
+                helpText="Enter run time in minutes"
               />
               <TextField
                 className="textfield"
@@ -1156,21 +1177,27 @@ export class App extends React.Component {
                 id="genreInput"
                 labelText="Genre"
                 width="large"
+                value={this.state.genreInput}
                 textInputProps={{
+                  onChange: e => {
+                    this.handleGenreInput(e);
+                  },
                   onKeyPress: e => {
                     if (event.key === 'Enter') {
                       e.preventDefault();
-                      this.handleGenre(e.target.value);
+                      this.handleGenre();
                     }
-                  }
+                  },
+                  placeholder: 'Type the value and hit enter'
                 }}
               />
               <div className="pill-ctn">
                 {this.state.customGenre &&
                   this.state.customGenre.length > 0 &&
-                  this.state.customGenre.map(genre => {
+                  this.state.customGenre.map((genre, i) => {
                     return (
                       <Pill
+                        key={i}
                         className="pill"
                         label={genre}
                         onClose={this.deleteGenre.bind(this, genre)}
