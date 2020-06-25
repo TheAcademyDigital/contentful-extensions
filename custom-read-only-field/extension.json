@@ -1,0 +1,8 @@
+{
+  "id": "custom-read-only-field",
+  "name": "custom-read-only-field",
+  "srcdoc": "./build/index.html",
+  "fieldTypes": [
+    "Text"
+  ]
+}
