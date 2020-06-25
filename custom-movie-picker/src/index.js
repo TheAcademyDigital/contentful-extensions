@@ -840,6 +840,9 @@ export class App extends React.Component {
         } else if (providerTemp.includes('usa')) {
           imageLink =
             'https://images.ctfassets.net/3m6gg2lxde82/6Pm4G8uFfIKqQ0xartJSI/ee3aa3a0d2a8792944b135a7199cd888/usa.png';
+        } else if (providerTemp.includes('epix')) {
+          imageLink =
+            'https://images.ctfassets.net/3m6gg2lxde82/6Ihc4GdzDDmgp8ojntZl2c/5192e0be73638e87cf4a88845de44b83/epix.png';
         } else {
           imageLink =
             'https://images.ctfassets.net/3m6gg2lxde82/bxMjODx6NyDQe5BBPDyUB/63531e68d813b77518443279d091a28b/generic.png';
