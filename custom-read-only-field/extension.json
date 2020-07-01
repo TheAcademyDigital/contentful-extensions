@@ -2,7 +2,27 @@
   "id": "custom-read-only-field",
   "name": "custom-read-only-field",
   "srcdoc": "./build/index.html",
-  "fieldTypes": [
-    "Text"
-  ]
+  "fieldTypes": ["Text"],
+  "parameters": {
+    "instance": [
+      {
+        "id": "fieldName",
+        "type": "Symbol",
+        "name": "Field Name",
+        "required": true
+      },
+      {
+        "id": "fieldText",
+        "type": "Symbol",
+        "name": "Field Help Text",
+        "required": false
+      },
+      {
+        "id": "charLimit",
+        "type": "Number",
+        "name": "Character Limit",
+        "required": false
+      }
+    ]
+  }
 }
