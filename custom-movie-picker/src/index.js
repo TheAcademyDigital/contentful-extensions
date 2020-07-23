@@ -392,12 +392,20 @@ export class App extends React.Component {
               return a.price - b.price;
             });
         }
+
+        //Scrub provider name
+        let providerTemp =
+          catalogName !== undefined && catalogName.length > 0 ? catalogName.join('') : '';
+        if (providerTemp.includes('Amazon PV US')) {
+          providerTemp = 'Amazon';
+        }
         let movie = {
-          provider: catalogName && catalogName.length > 0 ? catalogName.join('') : catalogName,
+          provider: providerTemp,
           data: licenseArr
         };
         movies.push(movie);
       });
+
       // console.log(movies);
 
       for (let i = 0; i < movies.length; i++) {
