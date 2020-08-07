@@ -476,7 +476,12 @@ export class App extends React.Component {
       this.props.sdk.entry.fields.title.setValue(movie.title);
       this.props.sdk.entry.fields.adminTitle.setValue(movie.title);
       this.props.sdk.entry.fields.description.setValue(movie.longDescription);
-      this.props.sdk.entry.fields.releaseDate.setValue(movie.releaseDate);
+      if (
+        this.props.sdk.entry.fields.override_releaseDate.getValue() === undefined ||
+        !this.props.sdk.entry.fields.override_releaseDate.getValue()
+      ) {
+        this.props.sdk.entry.fields.releaseDate.setValue(movie.releaseDate);
+      }
       this.props.sdk.entry.fields.movieId.setValue(movie.tmsId);
       this.props.sdk.entry.fields.logLine.setValue(movie.shortDescription);
       this.props.sdk.entry.fields.directors.setValue(directors);
