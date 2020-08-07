@@ -1,0 +1,34 @@
+{
+  "id": "custom-movie-picker",
+  "name": "custom-movie-picker",
+  "srcdoc": "./build/index.html",
+  "fieldTypes": ["Object"],
+  "parameters": {
+    "instance": [
+      {
+        "id": "connectApiUrl",
+        "type": "Symbol",
+        "name": "OnConnect API URL",
+        "required": true
+      },
+      {
+        "id": "connectApiKey",
+        "type": "Symbol",
+        "name": "OnConnect API KEY",
+        "required": true
+      },
+      {
+        "id": "onApiUrl",
+        "type": "Symbol",
+        "name": "On API URL",
+        "required": true
+      },
+      {
+        "id": "onApiKey",
+        "type": "Symbol",
+        "name": "On API KEY",
+        "required": true
+      }
+    ]
+  }
+}

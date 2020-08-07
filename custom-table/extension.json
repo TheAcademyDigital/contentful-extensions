@@ -1,0 +1,34 @@
+{
+  "id": "custom-table",
+  "name": "custom-table",
+  "srcdoc": "./build/index.html",
+  "fieldTypes": ["Object"],
+  "parameters": {
+    "instance": [
+      {
+        "id": "columnLimit",
+        "type": "Number",
+        "name": "Column Limit",
+        "required": false
+      },
+      {
+        "id": "allowStyling",
+        "type": "Boolean",
+        "name": "Enable Rich Text Styling",
+        "required": true
+      },
+      {
+        "id": "allowLinks",
+        "type": "Boolean",
+        "name": "Enable Rich Text Links",
+        "required": true
+      },
+      {
+        "id": "allowLists",
+        "type": "Boolean",
+        "name": "Enable Rich Text Lists",
+        "required": true
+      }
+    ]
+  }
+}
