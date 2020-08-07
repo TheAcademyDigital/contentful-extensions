@@ -4,7 +4,8 @@
   "srcdoc": "./build/index.html",
   "fieldTypes": ["Object"],
   "parameters": {
-    "instance": [{
+    "instance": [
+      {
         "id": "apiUrl",
         "type": "Symbol",
         "name": "API URL",
@@ -14,11 +15,14 @@
         "id": "selectConfig",
         "type": "Enum",
         "name": "Configure Select Type",
-        "options": [{
-          "single": "Single-select"
-        }, {
-          "multi": "Multi-select (Tagging)"
-        }],
+        "options": [
+          {
+            "single": "Single-select"
+          },
+          {
+            "multi": "Multi-select (Tagging)"
+          }
+        ],
         "default": "single"
       },
       {
@@ -26,6 +30,12 @@
         "type": "Symbol",
         "name": "Placeholder text",
         "description": "Placeholder text for multi-select dropdown"
+      },
+      {
+        "id": "helpText",
+        "type": "Symbol",
+        "name": "Help text",
+        "description": "This help text will show up below the field"
       }
     ]
   }

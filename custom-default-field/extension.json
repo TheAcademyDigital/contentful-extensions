@@ -1,0 +1,14 @@
+{
+  "id": "custom-default-field",
+  "name": "custom-default-field",
+  "srcdoc": "./build/index.html",
+  "fieldTypes": ["Symbol"],
+  "parameters": {
+    "instance": [{
+      "id": "defaultValue",
+      "type": "Symbol",
+      "name": "Default Value",
+      "required": true
+    }]
+  }
+}

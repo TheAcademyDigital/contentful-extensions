@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
-import { Spinner } from '@contentful/forma-36-react-components';
 import Select from 'react-select';
 import { init } from 'contentful-ui-extensions-sdk';
 import 'whatwg-fetch';
@@ -60,6 +59,7 @@ export class App extends React.Component {
             let parsedBranches = branches.map(branch => {
               return { value: branch.key, label: branch.text };
             });
+            parsedBranches.unshift({ value: '', label: 'Default' });
             this.setState({
               hasLoaded: true,
               branches: parsedBranches
@@ -68,7 +68,7 @@ export class App extends React.Component {
           error => {
             this.setState({
               hasLoaded: true,
-              error: 'Error: Could not fetch options from API'
+              error: `Error: ${error}`
             });
           }
         );
@@ -96,7 +96,7 @@ export class App extends React.Component {
 
   render() {
     if (!this.state.hasLoaded) {
-      return <Spinner />;
+      return 'Loading...';
     } else if (this.state.error) {
       return <p>{this.state.error}</p>;
     }

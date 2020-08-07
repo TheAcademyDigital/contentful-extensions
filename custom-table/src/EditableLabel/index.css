@@ -1,0 +1,38 @@
+p {
+  display: inherit;
+  margin: 0px;
+}
+
+.icon-ctn {
+  display: flex;
+  width: 18px !important;
+  height: 18px !important;
+  margin-right: 5px;
+}
+.icon-hover {
+  vertical-align: middle;
+  width: 18px !important;
+  height: 18px !important;
+}
+.icon-hover:hover {
+  cursor: pointer;
+}
+
+.richText {
+  width: 350px;
+}
+
+.button {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.content-cell {
+  padding: 10px 5px;
+}
+
+.data-cell {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
