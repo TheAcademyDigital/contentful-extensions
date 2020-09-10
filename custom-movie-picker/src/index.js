@@ -17,7 +17,9 @@ import {
   FieldGroup,
   EntryCard,
   Card,
-  Pill
+  Pill,
+  SelectField,
+  Option
 } from '@contentful/forma-36-react-components';
 import '@contentful/forma-36-react-components/dist/styles.css';
 
@@ -91,6 +93,7 @@ export class App extends React.Component {
       error: false,
       isLoading: false,
       searchText: '',
+      searchLang: 'en',
       movies: [],
       images: [],
       searched: false,
@@ -257,6 +260,12 @@ export class App extends React.Component {
       });
   };
 
+  handleLangSelect = e => {
+    this.setState({
+      searchLang: e.target.value
+    });
+  };
+
   onMovieSelect = movie => {
     this.props.sdk.close(movie);
   };
@@ -269,9 +278,10 @@ export class App extends React.Component {
       searched: true
     });
     let { connectApiKey, connectApiUrl } = this.props.sdk.parameters.invocation;
+    let lang = this.state.searchLang;
     if (connectApiKey && connectApiUrl) {
       fetch(
-        `${connectApiUrl}programs/search/?q=${param}&api_key=${connectApiKey}&imageSize=Ms&limit=25&entityType=movie`
+        `${connectApiUrl}programs/search/?q=${param}&api_key=${connectApiKey}&imageSize=Ms&limit=25&entityType=movie&titleLang=${lang}`
       )
         .then(res => res.json())
         .then(
@@ -915,6 +925,11 @@ export class App extends React.Component {
               <i className="fas fa-sync"></i> Reset Data
             </Button>
           )}
+          {
+            <Button className="add-button" onClick={this.refreshData.bind(this, this.state.tmsId)}>
+              <i className="fas fa-keyboard"></i> Add by TMSID
+            </Button>
+          }
           {isCustom && (
             <Note noteType="warning" testId="cf-ui-note" title="">
               This is a custom movie.
@@ -957,6 +972,7 @@ export class App extends React.Component {
           <div className="input-container">
             <TextInput
               type="text"
+              width="medium"
               placeholder="Search Movie..."
               onChange={this.onChange}
               onKeyPress={e => {
@@ -966,6 +982,39 @@ export class App extends React.Component {
               }}
               value={this.state.searchText}
             />
+            <SelectField
+              name="langSelect"
+              id="langSelect"
+              className="lang-select"
+              labelText="Language"
+              value={this.state.searchLang}
+              onChange={this.handleLangSelect}
+              selectProps={{
+                width: 'full'
+              }}>
+              <Option value="en">English</Option>
+              <Option value="es">Spanish</Option>
+              <Option value="en-GB">English GB</Option>
+              <Option value="pt-BR">Portuguese (Portugal)</Option>
+              <Option value="de">German</Option>
+              <Option value="fr-CA">French (Canada)</Option>
+              <Option value="fr-FR">French (France)</Option>
+              <Option value="sv">Swedish</Option>
+              <Option value="it">Inuktitut</Option>
+              <Option value="es-ES">Spanish (Spain)</Option>
+              <Option value="fi">Finnish</Option>
+              <Option value="en-AU">English (Australia)</Option>
+              <Option value="da">Danish</Option>
+              <Option value="ru">Russian</Option>
+              <Option value="no">Norwegian</Option>
+              <Option value="pl">Polish</Option>
+              <Option value="pt">Portuguese (Brazil)</Option>
+              <Option value="nl">Dutch</Option>
+              <Option value="am">Amharic</Option>
+              <Option value="hi">Hindi</Option>
+            </SelectField>
+          </div>
+          <div>
             <Button
               className="search-button"
               onClick={() => {
@@ -975,7 +1024,7 @@ export class App extends React.Component {
             </Button>
           </div>
 
-          <div>
+          <div className="logo-ctn">
             {this.state.isLoading && (
               <svg width="38" height="38" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
                 <defs>
