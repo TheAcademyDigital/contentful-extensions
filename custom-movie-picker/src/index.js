@@ -93,7 +93,7 @@ export class App extends React.Component {
       error: false,
       isLoading: false,
       searchText: '',
-      searchLang: 'en',
+      searchLang: '',
       movies: [],
       images: [],
       searched: false,
@@ -145,9 +145,7 @@ export class App extends React.Component {
       });
     }, 500);
 
-    // console.log(this.props.sdk.entry.fields);
-    // console.log(this.state);
-    // console.log(this.props.sdk.parameters.invocation);
+    console.log(this.props.sdk.user);
   }
 
   componentWillUnmount() {
@@ -239,6 +237,33 @@ export class App extends React.Component {
     );
   };
 
+  // Manually Add by tmsId
+  openAddByTmsid = () => {
+    let { connectApiKey, connectApiUrl } = this.props.sdk.parameters.instance;
+    this.props.sdk.dialogs
+      .openExtension({
+        title: 'Add Movie by TMSID',
+        shouldCloseOnOverlayClick: true,
+        parameters: { connectApiUrl, connectApiKey, type: 'manual' }
+      })
+      .then(tmsId => {
+        console.log('inside then', tmsId);
+        if (tmsId) {
+          let details = this.getMovieDetails(tmsId);
+          let stream = this.getMovieStream(tmsId);
+          // console.log(details, stream);
+
+          Promise.all([details, stream]).then(([details, stream]) => {
+            this.saveMovie(details, stream, true);
+          });
+        }
+      });
+  };
+
+  closeAddByTmsid = tmsId => {
+    this.props.sdk.close(tmsId);
+  };
+
   // Movie search
   openMovieSelect = () => {
     let { connectApiKey, connectApiUrl } = this.props.sdk.parameters.instance;
@@ -271,18 +296,26 @@ export class App extends React.Component {
   };
 
   fetchMovies = param => {
-    this.setState({
-      isLoading: true,
-      movies: [],
-      searchText: '',
-      searched: true
-    });
     let { connectApiKey, connectApiUrl } = this.props.sdk.parameters.invocation;
-    let lang = this.state.searchLang;
-    if (connectApiKey && connectApiUrl) {
-      fetch(
-        `${connectApiUrl}programs/search/?q=${param}&api_key=${connectApiKey}&imageSize=Ms&limit=25&entityType=movie&titleLang=${lang}`
-      )
+    let titleLang = this.state.searchLang;
+    let url = '';
+    console.log('inside fetch');
+    if (connectApiKey && connectApiUrl && param !== '') {
+      if (titleLang && titleLang !== '') {
+        url = `${connectApiUrl}programs/search/?q=${param}&api_key=${connectApiKey}&imageSize=Ms&limit=25&entityType=movie&titleLang=${titleLang}`;
+      } else {
+        url = `${connectApiUrl}programs/search/?q=${param}&api_key=${connectApiKey}&imageSize=Ms&limit=25&entityType=movie`;
+      }
+      console.log('inside fetch if statement');
+
+      this.setState({
+        isLoading: true,
+        movies: [],
+        searchText: '',
+        searched: true
+      });
+
+      fetch(url)
         .then(res => res.json())
         .then(
           data => {
@@ -445,9 +478,9 @@ export class App extends React.Component {
   };
 
   saveMovie = async (movie, stream, imagePopup = false) => {
-    // console.log(movie);
-    // console.log(stream);
-    if (movie) {
+    // console.log('saveMovie movie', movie);
+    console.log('saveMovie stream', stream);
+    if (movie && movie.tmsId && movie.tmsId !== undefined) {
       this.props.sdk.entry.fields.tags.removeValue();
       this.props.sdk.entry.fields.genre.removeValue();
       this.props.sdk.entry.fields.image.removeValue();
@@ -755,10 +788,14 @@ export class App extends React.Component {
                 )}
               </div>
               <div className="description">{movie.program.shortDescription}</div>
-              <div className="lang">Title Language: {movie.program.titleLang.toUpperCase()}</div>
-              <div className="lang">
-                Description Language: {movie.program.descriptionLang.toUpperCase()}
-              </div>
+              {movie.program.titleLang && movie.program.titleLang !== '' && (
+                <div className="lang">Title Language: {movie.program.titleLang.toUpperCase()}</div>
+              )}
+              {movie.program.descriptionLang && movie.program.descriptionLang !== '' && (
+                <div className="lang">
+                  Description Language: {movie.program.descriptionLang.toUpperCase()}
+                </div>
+              )}
             </div>
           </Card>
         );
@@ -925,11 +962,11 @@ export class App extends React.Component {
               <i className="fas fa-sync"></i> Reset Data
             </Button>
           )}
-          {
-            <Button className="add-button" onClick={this.refreshData.bind(this, this.state.tmsId)}>
+          {this.props.sdk && this.props.sdk.user.spaceMembership.admin && (
+            <Button className="add-button" onClick={this.openAddByTmsid}>
               <i className="fas fa-keyboard"></i> Add by TMSID
             </Button>
-          }
+          )}
           {isCustom && (
             <Note noteType="warning" testId="cf-ui-note" title="">
               This is a custom movie.
@@ -986,12 +1023,13 @@ export class App extends React.Component {
               name="langSelect"
               id="langSelect"
               className="lang-select"
-              labelText="Language"
+              labelText="Title Language"
               value={this.state.searchLang}
               onChange={this.handleLangSelect}
               selectProps={{
                 width: 'full'
               }}>
+              <Option value="">Optional</Option>
               <Option value="en">English</Option>
               <Option value="es">Spanish</Option>
               <Option value="en-GB">English GB</Option>
@@ -1288,6 +1326,36 @@ export class App extends React.Component {
               </Button>
             </FieldGroup>
           </Form>
+        </div>
+      );
+    } else if (
+      this.props.sdk.location.is(locations.LOCATION_DIALOG) &&
+      this.props.sdk.parameters.invocation &&
+      this.props.sdk.parameters.invocation.type === 'manual'
+    ) {
+      return (
+        <div className="dialog-container">
+          <div className="input-container">
+            <TextInput
+              type="text"
+              width="medium"
+              placeholder="Enter tmsId..."
+              onChange={this.onChange}
+              onKeyPress={e => {
+                if (e.key === 'Enter') {
+                  this.closeAddByTmsid(this.state.searchText);
+                }
+              }}
+              value={this.state.searchText}
+            />
+            <Button
+              className="search-button"
+              onClick={() => {
+                this.closeAddByTmsid(this.state.searchText);
+              }}>
+              Add
+            </Button>
+          </div>
         </div>
       );
     } else {
