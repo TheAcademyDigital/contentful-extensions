@@ -1361,5 +1361,3 @@ init(sdk => {
 if (module.hot) {
   module.hot.accept();
 }
-
-// https://www.oscars.org/contentful/extensions/custom-movie-picker/
