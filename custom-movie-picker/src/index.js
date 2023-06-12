@@ -4,6 +4,10 @@ import ReactDOM from 'react-dom';
 import { init, locations } from 'contentful-ui-extensions-sdk';
 import 'whatwg-fetch';
 import './index.css';
+
+var xml2js = require('xml2js');
+var moment = require('moment');
+var momentDurationFormatSetup = require('moment-duration-format');
 import {
   TextInput,
   Button,
@@ -18,9 +22,6 @@ import {
   Option
 } from '@contentful/forma-36-react-components';
 import '@contentful/forma-36-react-components/dist/styles.css';
-var xml2js = require('xml2js');
-var moment = require('moment');
-var momentDurationFormatSetup = require('moment-duration-format');
 
 export class App extends React.Component {
   constructor(props) {
@@ -143,6 +144,8 @@ export class App extends React.Component {
         cardLoading: false
       });
     }, 500);
+
+    console.log(this.props.sdk.user);
   }
 
   componentWillUnmount() {
@@ -244,9 +247,11 @@ export class App extends React.Component {
         parameters: { connectApiUrl, connectApiKey, type: 'manual' }
       })
       .then(tmsId => {
+        console.log('inside then', tmsId);
         if (tmsId) {
           let details = this.getMovieDetails(tmsId);
           let stream = this.getMovieStream(tmsId);
+          // console.log(details, stream);
 
           Promise.all([details, stream]).then(([details, stream]) => {
             this.saveMovie(details, stream, true);
@@ -294,12 +299,14 @@ export class App extends React.Component {
     let { connectApiKey, connectApiUrl } = this.props.sdk.parameters.invocation;
     let titleLang = this.state.searchLang;
     let url = '';
+    console.log('inside fetch');
     if (connectApiKey && connectApiUrl && param !== '') {
       if (titleLang && titleLang !== '') {
         url = `${connectApiUrl}programs/search/?q=${param}&api_key=${connectApiKey}&imageSize=Ms&limit=25&entityType=movie&titleLang=${titleLang}`;
       } else {
         url = `${connectApiUrl}programs/search/?q=${param}&api_key=${connectApiKey}&imageSize=Ms&limit=25&entityType=movie`;
       }
+      console.log('inside fetch if statement');
 
       this.setState({
         isLoading: true,
@@ -312,6 +319,7 @@ export class App extends React.Component {
         .then(res => res.json())
         .then(
           data => {
+            // console.log(data);
             this.setState({
               isLoading: false,
               movies: data.hits
@@ -360,6 +368,7 @@ export class App extends React.Component {
           return xml2js
             .parseStringPromise(data)
             .then(result => {
+              // console.log(result);
               return this.parseMovieStream(result);
             })
             .catch(err => {
@@ -374,6 +383,7 @@ export class App extends React.Component {
   };
 
   parseMovieStream = data => {
+    // console.log(data);
     var movies = [];
     let providers = [];
     let parsed = [];
@@ -385,6 +395,7 @@ export class App extends React.Component {
       data.on.programAvailabilities[0].programAvailability &&
       data.on.programAvailabilities[0].programAvailability.length > 0
     ) {
+      // console.log(data.on.programAvailabilities[0].programAvailability);
       data.on.programAvailabilities[0].programAvailability.map(provider => {
         const { catalogName, urls, videoQuality, viewingOptions } = provider;
         let urlArr = [];
@@ -438,6 +449,8 @@ export class App extends React.Component {
         movies.push(movie);
       });
 
+      // console.log(movies);
+
       for (let i = 0; i < movies.length; i++) {
         if (providers.indexOf(movies[i].provider) === -1) {
           providers.push(movies[i].provider);
@@ -455,6 +468,7 @@ export class App extends React.Component {
   };
 
   refreshData = async tmsId => {
+    // console.log(tmsId);
     let details = this.getMovieDetails(tmsId);
     let stream = this.getMovieStream(tmsId);
 
@@ -464,6 +478,8 @@ export class App extends React.Component {
   };
 
   saveMovie = async (movie, stream, imagePopup = false) => {
+    // console.log('saveMovie movie', movie);
+    console.log('saveMovie stream', stream);
     if (movie && movie.tmsId && movie.tmsId !== undefined) {
       this.props.sdk.entry.fields.tags.removeValue();
       this.props.sdk.entry.fields.genre.removeValue();
@@ -517,8 +533,6 @@ export class App extends React.Component {
       this.props.sdk.entry.fields.genre.setValue(movie.genres);
       this.props.sdk.entry.fields.rating.setValue(rating);
       this.props.sdk.entry.fields.tags.setValue(tags);
-      this.props.sdk.entry.fields.titleLanguage.setValue(movie.titleLang);
-      this.props.sdk.entry.fields.descriptionLanguage.setValue(movie.descriptionLang);
 
       if (stream) {
         this.props.sdk.entry.fields.movieAvailability.setValue(stream);
@@ -696,6 +710,7 @@ export class App extends React.Component {
       tmsId: event.target.tmsId.value,
       genre: this.state.customGenre
     };
+    // console.log(formData);
     this.props.sdk.close(formData);
   };
 
@@ -736,9 +751,11 @@ export class App extends React.Component {
   };
 
   render() {
+    // console.log(this.state.movies);
     // Create master array of search results
     if (this.state.movies.length > 0) {
       var movies = this.state.movies.map(movie => {
+        // console.log(movie);
         let duration = movie.program.runTime
           ? moment.duration(movie.program.runTime, 'minutes').format('mm')
           : '';
@@ -811,6 +828,7 @@ export class App extends React.Component {
     }
 
     if (this.state.movieAvailability && this.state.movieAvailability.length > 0) {
+      // console.log(this.state.movieAvailability);
       var streamData = this.state.movieAvailability.map((provider, i) => {
         let data = undefined;
         let price = undefined;
